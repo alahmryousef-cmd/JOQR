@@ -344,6 +344,64 @@ body::after {
 .footer-heart { color:#f43f5e; margin:0 4px; animation:heartbeat 2s ease-in-out infinite; }
 @keyframes heartbeat { 0%,100%{transform:scale(1)} 15%{transform:scale(1.28)} 30%{transform:scale(1)} 45%{transform:scale(1.15)} }
 
+
+.site-footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 24px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-line {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footer-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  position: relative;
+  transition: 0.3s;
+}
+
+.footer-link:hover {
+  color: var(--accent-dim);
+  transform: translateY(-1px);
+}
+
+/* underline animation */
+.footer-link::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: var(--accent);
+  transition: 0.3s;
+}
+
+.footer-link:hover::after {
+  width: 100%;
+}
+
+  
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width:720px) {
   .app-card { grid-template-columns:1fr; }
@@ -541,10 +599,21 @@ body::after {
 
 <!-- ── Footer ──────────────────────────────────────────────── -->
 <footer class="site-footer">
-  <p><span data-i18n="footer">Crafted with</span> <i class="fa-solid fa-heart footer-heart"></i> <span data-i18n="footer_by">by</span> <strong>Yousef Al-ahmer</strong></p>
-</footer>
+  <div class="footer-content">
+    <div class="footer-line">
+      <span id="codingText">Coding by:</span>
+      <a href="https://alahmryousef-cmd.github.io/yousefalahmr-Bio/"
+         target="_blank"
+         class="footer-link">
+         Yousef Alahmr
+      </a>
+    </div>
 
-<script>
+    <div class="footer-line">
+      <span id="copyrightText"></span>
+    </div>
+  </div>
+</footer>
 /* ============================================================
    JOQR – Inline JS
    ============================================================ */
@@ -742,6 +811,14 @@ function showEmptyState(){ previewLoading.style.display='none'; previewImg.style
 function showError(msg){ errorMsg.textContent=msg; errorBanner.style.display='flex'; }
 function hideError(){ errorBanner.style.display='none'; }
 
+  
+// Footer dynamic copyright year
+function updateFooter() {
+  const year = new Date().getFullYear();
+  const text = `© ${year} All Rights Reserved.`;
+  document.getElementById("copyrightText").textContent = text;
+}
+updateFooter();
 /* Boot */
 applyTheme(currentTheme);
 applyLang(currentLang);
