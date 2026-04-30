@@ -1,6 +1,5 @@
 # ============================================================
-# JOQR – app.py  (single-template build)
-# CodingBy: Yousef Al-ahmer  |  Redesigned & Refactored
+# CodingBy: Yousef Al-ahmer
 # ============================================================
 
 import os
@@ -106,4 +105,4 @@ def preview():
         return ('', 500)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run()
