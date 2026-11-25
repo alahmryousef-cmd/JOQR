@@ -1,18 +1,4 @@
-# ============================================================
-# JOQR – QR code generator (Flask)
-# CodingBy: Yousef Al-ahmer
-#
-# Rendering pipeline (why it is built this way):
-#   1. Get the raw module matrix from `qrcode` (no image library involved).
-#   2. Draw every module as an exact integer-sized square. No resampling,
-#      so edges stay sharp and the image holds exactly two colours
-#      (plus alpha) unless a logo is added.
-#   3. Transparent mode is a real RGBA canvas with alpha = 0 behind the
-#      modules. (The old code asked `qrcode` for back_color=None, which
-#      silently produced an opaque *black* RGB image.)
-#   4. A logo gets a clear plate: the modules under it are removed from
-#      the matrix, so the logo never sits on top of half-covered modules.
-# ============================================================
+
 
 import os
 import uuid
@@ -160,7 +146,7 @@ def render_qr(data, size, fg, bg, logo=None, logo_pct=DEFAULT_LOGO_PCT):
         version=LOGO_MIN_VERSION if logo is not None else None,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
         box_size=1,
-        border=0,                                    # quiet zone is added below
+        border=0,                                   
     )
     qr.add_data(data)
     try:
@@ -172,9 +158,6 @@ def render_qr(data, size, fg, bg, logo=None, logo_pct=DEFAULT_LOGO_PCT):
     n = len(matrix)
     total = n + 2 * QUIET_ZONE
 
-    # Integer module size => every module is an identical, crisp square.
-    # Leftover pixels are split evenly as extra quiet zone, so the image is
-    # exactly `size` px wide.
     box = max(1, size // total)
     offset = (size - total * box) // 2
     origin = offset + QUIET_ZONE * box
@@ -187,12 +170,9 @@ def render_qr(data, size, fg, bg, logo=None, logo_pct=DEFAULT_LOGO_PCT):
                 matrix[i][j] = False
 
     mask = Image.frombytes('L', (n, n), bytes(255 if cell else 0 for row in matrix for cell in row))
-    mask = mask.resize((n * box, n * box), Image.Resampling.NEAREST)    # no interpolation
+    mask = mask.resize((n * box, n * box), Image.Resampling.NEAREST)    
 
     if bg is None:
-        # Transparent pixels keep the foreground RGB (alpha 0). If another
-        # tool resamples the PNG, edges blend towards the QR colour instead
-        # of a dark fringe.
         canvas = Image.new('RGBA', (size, size), (*fg, 0))
     else:
         canvas = Image.new('RGBA', (size, size), (*bg, 255))
@@ -200,7 +180,7 @@ def render_qr(data, size, fg, bg, logo=None, logo_pct=DEFAULT_LOGO_PCT):
 
     if logo_img is not None:
         layer = Image.new('RGBA', canvas.size, (0, 0, 0, 0))
-        layer.paste(logo_img, logo_pos)              # copies the logo's own alpha
+        layer.paste(logo_img, logo_pos)            
         canvas = Image.alpha_composite(canvas, layer)
 
     return (canvas if bg is None else canvas.convert('RGB')), total
@@ -247,7 +227,6 @@ def generate_qr(data, size=DEFAULT_SIZE, fill_color='#000000', back_color='#ffff
     return _generate(data, size, fill_color, back_color, logo, logo_size, preview)[0]
 
 
-# ── Routes ─────────────────────────────────────────────────
 
 def _render_from_request(preview):
     return _generate(
@@ -274,7 +253,7 @@ def generate():
     except QRError as err:
         return jsonify({'error': err.code}), err.status
     except HTTPException:
-        raise                                   # e.g. 413: let the registered handler answer
+        raise                                   
     except Exception:
         app.logger.exception('Generate failed')
         return jsonify({'error': 'unexpected_error'}), 500
@@ -299,7 +278,7 @@ def preview():
         app.logger.exception('Preview failed')
         return jsonify({'error': 'unexpected_error'}), 500
     resp = send_file(buf, mimetype='image/png')
-    resp.headers['X-QR-Modules'] = str(modules)   # lets the UI warn when the size is too small for the content
+    resp.headers['X-QR-Modules'] = str(modules)   
     return resp
 
 
@@ -317,8 +296,6 @@ def harden(resp):
 
 
 if __name__ == '__main__':
-    # Debug mode exposes the Werkzeug console: only enable it explicitly, and
-    # only bind to the network when asked (HOST=0.0.0.0).
     app.run(
         host=os.environ.get('HOST', '127.0.0.1'),
         port=int(os.environ.get('PORT', 8000)),
